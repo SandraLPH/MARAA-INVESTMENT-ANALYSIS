@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis Sector Salud (MARAA®)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; 
+        }
+        .module-card {
+            background-color: white;
+            border-radius: 0.75rem; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 1.5rem; 
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .tab-button.active {
+            background-color: #4f46e5; 
+            color: white;
+        }
+        .tab-button:not(.active) {
+            background-color: #e5e7eb; 
+            color: #374151; 
+        }
+        .tab-button:not(.active):hover {
+            background-color: #d1d5db; 
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #e5e7eb; 
+            padding: 0.75rem;
+            text-align: left;
+        }
+        th {
+            background-color: #f9fafb; 
+            font-weight: 600;
+        }
+        .kpi-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #4f46e5; 
+        }
+        .score-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px; 
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+        .score-green { background-color: #d1fae5; color: #065f46; } 
+        .score-yellow { background-color: #fef3c7; color: #92400e; } 
+        .score-red { background-color: #fee2e2; color: #991b1b; } 
+        .score-orange { background-color: #ffedd5; color: #c2410c; } 
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto; 
+            padding: 25px;
+            border: 1px solid #888;
+            width: 90%; 
+            max-width: 800px; 
+            border-radius: 0.75rem;
+            position: relative;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 300px; 
+            width: 100%; 
+            max-width: 600px; 
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding:1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            background-color: #f9fafb;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <header class="mb-8 text-center">
+        <h1 class="text-4xl font-bold text-gray-800">Análisis Sector Salud (MARAA®)</h1>
+        <p class="text-lg text-gray-600 mt-2">Aplicación Interactiva de Módulos de Inversión</p>
+    </header>
+
+    <div class="mb-8 flex flex-wrap justify-center gap-2">
+        <button class="tab-button active" onclick="showModule('module1')">Módulo 1: Análisis Sectorial</button>
+        <button class="tab-button" onclick="showModule('module2')">Módulo 2: Clasificación Empresas</button>
+        <button class="tab-button" onclick="showModule('module3')">Módulo 3: Análisis Fundamental</button>
+        <button class="tab-button" onclick="showModule('module4')">Módulo 4: Evaluación Cualitativa</button>
+        <button class="tab-button" onclick="showModule('module5')">Módulo 5: Valoración</button>
+        <button class="tab-button" onclick="showModule('module6')">Módulo 6: Seguimiento</button>
+        <button class="tab-button" onclick="showModule('conclusiones')">Conclusiones Generales</button>
+    </div>
+
+    <main id="modulesContainer">
+        <div id="module1" class="module-content-area p-6 module-card">
+            <h2 class="text-2xl font-semibold mb-4 text-indigo-700">Módulo 1: Análisis Sectorial del Sector Salud</h2>
+            <p class="text-gray-700 mb-4">Evaluación de eficiencia, momentum, valoración y contexto macro del sector Salud.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="p-4 border rounded-lg bg-indigo-50">
+                    <h3 class="text-lg font-semibold mb-2 text-indigo-600">Diagnóstico Técnico Sectorial</h3>
+                    <ul class="list-disc list-inside space-y-1 text-gray-700">
+                        <li><strong>ROIC Promedio:</strong> <span class="kpi-value">14%</span></li>
+                        <li><strong>FCF Yield:</strong> <span class="kpi-value">5.1%</span></li>
+                        <li><strong>PEG Promedio:</strong> <span class="kpi-value">1.4</span></li>
+                        <li><strong>Score MARAA Sectorial:</strong> <span class="kpi-value">8.6/10</span></li>
+                        <li><strong>Momentum Técnico:</strong> Positivo</li>
+                        <li><strong>CAGR Ingresos / EPS 3A:</strong> 6.8% / 7.3%</li>
+                        <li><strong>Estabilidad Financiera:</strong> Baja</li>
+                    </ul>
+                </div>
+                <div class="p-4 border rounded-lg bg-green-50">
+                    <h3 class="text-lg font-semibold mb-2 text-green-600">Contexto Macroeconómico y Tendencias</h3>
+                    <h4 class="font-medium text-gray-800 mt-2">Megatendencias:</h4>
+                     <ul class="list-disc list-inside ml-4 text-gray-700"><li>Envejecimiento poblacional</li><li>Medicina personalizada</li><li>Digitalización</li></ul>
+                    <h4 class="font-medium text-gray-800 mt-3">Riesgos:</h4>
+                    <ul class="list-disc list-inside ml-4 text-gray-700"><li>Presión regulatoria</li><li>Dependencia de patentes</li><li>Volatilidad clínica</li></ul>
+                </div>
+            </div>
+            <h3 class="text-xl font-semibold mb-3 text-indigo-700">Score Sectorial MARAA</h3>
+            <div class="overflow-x-auto"><table id="module1ScoreTableContainer"><thead><tr><th>Variable Clave</th><th>Ponderación</th><th>Calificación (1 a 5)</th><th>Subscore</th></tr></thead><tbody id="module1ScoreTableBody"></tbody></table></div>
+            <div class="chart-container"><canvas id="module1ScoreChart"></canvas></div>
+            <p class="mt-4 text-gray-700"><strong>Clasificación:</strong> <span class="score-badge score-green">Liderando</span></p>
+        </div>
+
+        <div id="module2" class="module-content-area p-6 module-card" style="display:none;">
+            <h2 class="text-2xl font-semibold mb-4 text-indigo-700">Módulo 2: Clasificación de Empresas</h2>
+            <div class="overflow-x-auto"><table><thead><tr><th>Empresa</th><th>Ticker</th><th>Capitalización</th><th>Precio</th><th>Cambio (%)</th><th>Industria</th><th></th></tr></thead><tbody id="module2TableBody"></tbody></table></div>
+        </div>
+        <div id="module3" class="module-content-area p-6 module-card" style="display:none;">
+            <h2 class="text-2xl font-semibold mb-4 text-indigo-700">Módulo 3: Análisis Fundamental</h2>
+            <div class="overflow-x-auto"><table><thead><tr><th>Empresa</th><th>ROE</th><th>ROIC</th><th>FCF Yield</th><th>Margen Ope.</th><th>Deuda/EBITDA</th><th>EPS 5A CAGR</th><th>Score MARAA</th><th></th></tr></thead><tbody id="module3TableBody"></tbody></table></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <div class="chart-container"><canvas id="module3RoicChart"></canvas></div>
+                <div class="chart-container"><canvas id="module3FcfYieldChart"></canvas></div>
+                <div class="chart-container"><canvas id="module3EpsCagrChart"></canvas></div>
+            </div>
+        </div>
+        <div id="module4" class="module-content-area p-6 module-card" style="display:none;">
+            <h2 class="text-2xl font-semibold mb-4 text-indigo-700">Módulo 4: Evaluación Cualitativa</h2>
+            <div id="module4Content" class="space-y-6"></div>
+            <h3 class="text-xl font-semibold mt-6 mb-3 text-indigo-700">Comparación Cualitativa</h3>
+            <div class="overflow-x-auto"><table><thead><tr><th>Empresa</th><th>Modelo</th><th>Liderazgo</th><th>Innovación</th><th>Riesgos</th></tr></thead><tbody id="module4SummaryTableBody"></tbody></table></div>
+        </div>
+        <div id="module5" class="module-content-area p-6 module-card" style="display:none;">
+            <h2 class="text-2xl font-semibold mb-4 text-indigo-700">Módulo 5: Valoración</h2>
+            <h3 class="text-xl font-semibold mb-3 text-indigo-600">Múltiplos y Valoraciones</h3>
+            <div class="overflow-x-auto"><table><thead><tr><th>Empresa</th><th>P/E Fwd</th><th>EV/EBITDA</th><th>P/FCF</th><th>PEG</th><th>Precio Actual</th><th>Valor Base</th><th>Upside</th><th>SAV</th></tr></thead><tbody id="module5MultiplesTableBody"></tbody></table></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <div class="chart-container"><canvas id="module5PriceVsValueChart"></canvas></div>
+                <div class="chart-container"><canvas id="module5UpsideChart"></canvas></div>
+            </div>
+            <h3 class="text-xl font-semibold mt-6 mb-3 text-indigo-600">Escenarios DCF</h3>
+            <div id="module5DCFContent" class="space-y-4"></div>
+        </div>
+        <div id="module6" class="module-content-area p-6 module-card" style="display:none;">
+            <h2 class="text-2xl font-semibold mb-4 text-indigo-700">Módulo 6: Seguimiento</h2>
+            <h3 class="text-lg font-semibold mb-2 text-indigo-600">Empresas Bajo Seguimiento:</h3>
+            <ul id="module6TrackedCompanies" class="list-disc list-inside space-y-1 mb-4"></ul>
+            <h3 class="text-lg font-semibold mb-2 text-indigo-600">Variables Clave de Monitoreo:</h3>
+            <div class="overflow-x-auto mb-4"><table><thead><tr><th>Variable</th><th>Umbral</th></tr></thead><tbody id="module6MonitoringVars"></tbody></table></div>
+            <h3 class="text-lg font-semibold mb-2 text-indigo-600">Recomendaciones Iniciales:</h3>
+            <div class="overflow-x-auto"><table><thead><tr><th>Empresa</th><th>Precio</th><th>Momentum</th><th>Sorpresa EPS</th><th>Margen Op.</th><th>Acción</th></tr></thead><tbody id="module6Recommendations"></tbody></table></div>
+        </div>
+        <div id="conclusiones" class="module-content-area p-6 module-card" style="display:none;">
+            <h2 class="text-2xl font-semibold mb-4 text-indigo-700">Conclusiones Generales</h2>
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="p-4 border rounded-lg bg-blue-50"><h3 class="text-lg font-semibold mb-2 text-blue-600">Diagnóstico del Sector</h3><p><strong>Clasificación MARAA:</strong> <span class="score-badge score-green">Sector Líder</span></p></div>
+                <div class="p-4 border rounded-lg bg-yellow-50"><h3 class="text-lg font-semibold mb-2 text-yellow-700">Recomendación de Portafolio</h3> <ul class="list-disc list-inside text-sm"><li>UNH y JNJ (Base)</li><li>LLY (Táctico)</li><li>Evitar PFE</li><li>CVS (Observación)</li></ul></div>
+            </div>
+            <h3 class="text-xl font-semibold mb-3 text-indigo-600">Empresas Recomendadas</h3>
+            <div class="overflow-x-auto mb-6"><table><thead><tr><th>Empresa</th><th>Ticker</th><th>Rol</th><th>Justificación</th></tr></thead><tbody id="conclusionesRecomendadas"></tbody></table></div>
+            <h3 class="text-xl font-semibold mb-3 text-indigo-600">Acciones con Riesgo</h3>
+            <div class="overflow-x-auto mb-6"><table><thead><tr><th>Empresa</th><th>Clasificación</th><th>Riesgo</th></tr></thead><tbody id="conclusionesRiesgo"></tbody></table></div>
+        </div>
+    </main>
+
+    <div id="companyModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <h3 id="modalCompanyName" class="text-2xl font-semibold mb-4 text-indigo-700"></h3>
+            <div id="modalCompanyDetails">
+                </div>
+            </div>
+    </div>
+
+    <footer class="mt-12 pt-8 border-t border-gray-300 text-center">
+        <p class="text-gray-600">Aplicación generada para el análisis del Sector Salud.</p>
+        <p class="text-sm text-gray-500">Metodología MARAA®</p>
+    </footer>
+
+    <script>
+        // --- Datos del Informe (Extraídos del Documento) ---
+        const informeData = {
+            modulo1: {
+                scoreSectorial: [
+                    { variable: "Rendimiento relativo al SPY", ponderacion: "20%", calificacion: 4.5, subscore: 0.90 },
+                    { variable: "Valoración vs histórico", ponderacion: "20%", calificacion: 4.0, subscore: 0.80 },
+                    { variable: "Momentum técnico", ponderacion: "15%", calificacion: 4.5, subscore: 0.675 },
+                    { variable: "Tendencias estructurales", ponderacion: "20%", calificacion: 5.0, subscore: 1.00 },
+                    { variable: "Riesgos sectoriales", ponderacion: "15%", calificacion: 3.5, subscore: 0.525 },
+                    { variable: "Correlación intersectorial baja", ponderacion: "10%", calificacion: 4.0, subscore: 0.40 }
+                ],
+                scoreTotal: 4.30
+            },
+            modulo2: {
+                empresas: [
+                    { empresa: "Eli Lilly and Company", ticker: "LLY", cap: "782.95 B", precio: "721.81", cambio: "+0.34%", industria: "Farmacéutica" },
+                    { empresa: "UnitedHealth Group", ticker: "UNH", cap: "460.3 B", precio: "298.08", cambio: "-0.01%", industria: "Seguros de Salud" },
+                    { empresa: "Johnson & Johnson", ticker: "JNJ", cap: "394 B", precio: "153.58", cambio: "+0.75%", industria: "Farmacéutica / Dispositivos Médicos" },
+                    { empresa: "AbbVie Inc.", ticker: "ABBV", cap: "301.6 B", precio: "185.87", cambio: "+1.52%", industria: "Farmacéutica" },
+                    { empresa: "Merck & Co., Inc.", ticker: "MRK", cap: "244.44 B", precio: "76.33", cambio: "+0.21%", industria: "Farmacéutica" },
+                    { empresa: "Thermo Fisher Scientific", ticker: "TMO", cap: "219.88 B", precio: "403.25", cambio: "+0.28%", industria: "Diagnóstico e Investigación" },
+                    { empresa: "Abbott Laboratories", ticker: "ABT", cap: "219.35 B", precio: "132.88", cambio: "+0.65%", industria: "Dispositivos Médicos / Diagnóstico" },
+                    { empresa: "CVS Health Corp", ticker: "CVS", cap: "100.2 B", precio: "62.66", cambio: "+0.34%", industria: "Farmacia Minorista / Seguros" },
+                    { empresa: "Pfizer Inc.", ticker: "PFE", cap: "58.5 B", precio: "23.41", cambio: "+0.99%", industria: "Farmacéutica" },
+                    { empresa: "Bristol-Myers Squibb Co.", ticker: "BMY", cap: "47.6 B", precio: "47.61", cambio: "+1.35%", industria: "Farmacéutica" }
+                ]
+            },
+            modulo3: {
+                indicadores: [
+                    { empresa: "LLY", roe: 56, roic: 31, fcf_yield: 2.7, margen_ope: 36, deuda_ebitda: "1.1x", eps_cagr: 18.3, score: "🟢 Muy Alto" },
+                    { empresa: "UNH", roe: 27, roic: 19, fcf_yield: 4.3, margen_ope: 9, deuda_ebitda: "1.3x", eps_cagr: 13.1, score: "🟢 Alto" },
+                    { empresa: "JNJ", roe: 23, roic: 14, fcf_yield: 5.2, margen_ope: 28, deuda_ebitda: "0.9x", eps_cagr: 6.7, score: "🟢 Alto" },
+                    { empresa: "ABBV", roe: 141, roic: 18, fcf_yield: 7.1, margen_ope: 41, deuda_ebitda: "2.3x", eps_cagr: 13.8, score: "🟢 Alto" },
+                    { empresa: "MRK", roe: 16, roic: 13, fcf_yield: 6.8, margen_ope: 31, deuda_ebitda: "1.6x", eps_cagr: 10.5, score: "🟡 Medio" },
+                    { empresa: "TMO", roe: 16, roic: 11, fcf_yield: 2.9, margen_ope: 24, deuda_ebitda: "1.8x", eps_cagr: 11.6, score: "🟡 Medio" },
+                    { empresa: "ABT", roe: 15, roic: 12, fcf_yield: 3.3, margen_ope: 20, deuda_ebitda: "1.7x", eps_cagr: 10.4, score: "🟡 Medio" },
+                    { empresa: "CVS", roe: 6, roic: 6, fcf_yield: 8.4, margen_ope: 5, deuda_ebitda: "3.4x", eps_cagr: 6.5, score: "🔴 Bajo" },
+                    { empresa: "PFE", roe: 8, roic: 6, fcf_yield: 6.0, margen_ope: 23, deuda_ebitda: "2.1x", eps_cagr: -2.4, score: "🔴 Bajo" },
+                    { empresa: "BMY", roe: 15, roic: 10, fcf_yield: 9.2, margen_ope: 37, deuda_ebitda: "2.0x", eps_cagr: 1.7, score: "🔶 Bajo-Med" }
+                ]
+            },
+            modulo4: {
+                evaluaciones: [
+                    { empresa: "Eli Lilly (LLY)", modelo: "Enfoque en obesidad y diabetes. Moat en I+D.", liderazgo: "CEO David Ricks, ejecución sobresaliente.", innovacion: "Zepbound, adquisiciones como SiteOne.", riesgos: "Concentración de ingresos." , ticker: "LLY"},
+                    { empresa: "UnitedHealth Group (UNH)", modelo: "Integración vertical (Optum y seguros).", liderazgo: "Enfoque disciplinado en sostenibilidad.", innovacion: "Salud digital, atención basada en valor.", riesgos: "Tensiones regulatorias Medicare Advantage.", ticker: "UNH" },
+                    { empresa: "Johnson & Johnson (JNJ)", modelo: "Diversificación (dispositivos, farmacéutica, consumo).", liderazgo: "Reputación en gobierno corporativo.", innovacion: "Amplio pipeline, liderazgo terapéutico.", riesgos: "Litigios pendientes.", ticker: "JNJ"},
+                    { empresa: "CVS Health (CVS)", modelo: "Transición a ecosistema de salud.", liderazgo: "Reestructuración bajo nuevo CEO.", innovacion: "HealthHUBs, nuevas alianzas.", riesgos: "Alto escrutinio regulatorio en PBMs.", ticker: "CVS" },
+                    { empresa: "Pfizer (PFE)", modelo: "Portafolio amplio, orientado a I+D.", liderazgo: "Enfoque en adquisiciones.", innovacion: "Reposicionamiento post-COVID.", riesgos: "Caída ingresos vacunas.", ticker: "PFE" }
+                ],
+                resumen: [
+                    { empresa: "LLY", modelo: "Fuerte", liderazgo: "Sólido", innovacion: "Alta", riesgos: "Medio" },
+                    { empresa: "UNH", modelo: "Integrado", liderazgo: "Sólido", innovacion: "Alta", riesgos: "Medio" },
+                    { empresa: "JNJ", modelo: "Diversificado", liderazgo: "Sólido", innovacion: "Alta", riesgos: "Medio" },
+                    { empresa: "CVS", modelo: "En transformación", liderazgo: "Adecuado", innovacion: "Media", riesgos: "Alto" },
+                    { empresa: "PFE", modelo: "Enfocado", liderazgo: "Sólido", innovacion: "Alta", riesgos: "Alto" }
+                ]
+            },
+            modulo5: {
+                multiples: [
+                    { empresa: "LLY", pe_fwd: "52x", ev_ebitda: "38x", p_fcf: "65x", peg: "1.6", precio_actual: 721.81, valor_base: 670, upside: -7, sav: "🟡" },
+                    { empresa: "UNH", pe_fwd: "17x", ev_ebitda: "12x", p_fcf: "18x", peg: "1.1", precio_actual: 298.08, valor_base: 325, upside: 9, sav: "🟢" },
+                    { empresa: "JNJ", pe_fwd: "14x", ev_ebitda: "11x", p_fcf: "17x", peg: "1.2", precio_actual: 153.58, valor_base: 170, upside: 11, sav: "🟢" },
+                    { empresa: "CVS", pe_fwd: "8x", ev_ebitda: "7x", p_fcf: "7.5x", peg: "0.9", precio_actual: 62.66, valor_base: 78, upside: 24, sav: "🟡" },
+                    { empresa: "PFE", pe_fwd: "11x", ev_ebitda: "9x", p_fcf: "10x", peg: "2.2", precio_actual: 23.41, valor_base: 21, upside: -10, sav: "🔴" }
+                ],
+                dcf: [
+                    { empresa: "Eli Lilly (LLY)", base: "$670", optimista: "$780", pesimista: "$600", comentario: "Estabilización FCF / Crecimiento diabetes / Dependencia nuevos fármacos." },
+                    { empresa: "UnitedHealth (UNH)", base: "$325", optimista: "$350", pesimista: "$280", comentario: "Eficiencia sostenida y crecimiento estable." },
+                    { empresa: "Johnson & Johnson (JNJ)", base: "$170", optimista: "$185", pesimista: "$140", comentario: "Diversificación y pipeline robusto." },
+                    { empresa: "CVS Health (CVS)", base: "$78", optimista: "$85", pesimista: "$58", comentario: "Recuperación múltiplo y eficiencia." },
+                    { empresa: "Pfizer (PFE)", base: "$21", optimista: "$26", pesimista: "$18", comentario: "Ajuste tras caída ingresos COVID." }
+                ]
+            },
+            modulo6: {
+                seguimiento: ["Eli Lilly (LLY)", "UnitedHealth Group (UNH)", "Johnson & Johnson (JNJ)", "CVS Health (CVS)", "Pfizer (PFE)"],
+                variables_monitoreo: [
+                    { variable: "Precio / Media Móvil 200d", umbral: "Cruce descendente o > ±10%" },
+                    { variable: "Sorpresa EPS", umbral: "> ±10%" },
+                    { variable: "Margen operativo", umbral: "Caída > 5% interanual" },
+                    { variable: "ROE", umbral: "< 10% sostenido" },
+                    { variable: "FCF Negativo", umbral: "2 trimestres consecutivos" },
+                    { variable: "Noticias clave", umbral: "Fusiones, litigios, regulación" },
+                    { variable: "Revisión de analistas", umbral: "Downgrade por 2 o más casas" }
+                ],
+                recomendaciones_iniciales: [ 
+                    { empresa: "LLY", precio: 721.81, momentum: "Fuerte", sorpresa_eps: "+9%", margen_op: "36%", accion: "Mantener" },
+                    { empresa: "UNH", precio: 298.08, momentum: "Positivo", sorpresa_eps: "+6%", margen_op: "9%", accion: "Mantener" },
+                    { empresa: "JNJ", precio: 153.58, momentum: "Estable", sorpresa_eps: "+4%", margen_op: "28%", accion: "Mantener" },
+                    { empresa: "CVS", precio: 62.66, momentum: "Neutro", sorpresa_eps: "-3%", margen_op: "5%", accion: "Revisar" },
+                    { empresa: "PFE", precio: 23.41, momentum: "Negativo", sorpresa_eps: "-12%", margen_op: "23%", accion: "Evaluar salida" }
+                ]
+            },
+            conclusiones_finales: {
+                recomendadas: [
+                    { empresa: "UnitedHealth Group", ticker: "UNH", rol: "🟢 Líder integral", justificacion: "Integración vertical, eficiencia operativa, proyecciones estables." },
+                    { empresa: "Johnson & Johnson", ticker: "JNJ", rol: "🟢 Defensiva eficiente", justificacion: "Diversificación, estabilidad operativa, valoración atractiva." },
+                    { empresa: "Eli Lilly", ticker: "LLY", rol: "🟡 Innovadora, exigente", justificacion: "Crecimiento superior, pipeline diferencial, pero con precio exigente." }
+                ],
+                riesgo: [
+                    { empresa: "CVS Health", clasificacion: "🟠 Riesgo medio", riesgo_est: "Reestructuración operativa, oportunidades condicionales." },
+                    { empresa: "Pfizer", clasificacion: "🔴 Riesgo alto", riesgo_est: "Deterioro en ingresos, falta de catalizadores claros." }
+                ]
+            }
+        };
+
+        let currentOpenCompanyTicker = null; 
+
+        // --- Variables Globales para Gráficos ---
+        let module1ChartInstance = null;
+        let module3RoicChartInstance = null;
+        let module3FcfYieldChartInstance = null;
+        let module3EpsCagrChartInstance = null;
+        let module5PriceVsValueChartInstance = null;
+        let module5UpsideChartInstance = null;
+
+        // --- Funciones para Mostrar Módulos y Cargar Datos (existentes) ---
+        function showModule(moduleId) {
+            const modules = document.querySelectorAll('.module-content-area');
+            modules.forEach(module => module.style.display = 'none');
+            const selectedModule = document.getElementById(moduleId);
+            if (selectedModule) selectedModule.style.display = 'block';
+
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => {
+                button.classList.remove('active');
+                if (button.getAttribute('onclick').includes(moduleId)) {
+                    button.classList.add('active');
+                }
+            });
+
+            if (moduleId === 'module1') createModule1ScoreChart();
+            if (moduleId === 'module3') {
+                createModule3RoicChart();
+                createModule3FcfYieldChart();
+                createModule3EpsCagrChart();
+            }
+            if (moduleId === 'module5') {
+                 createModule5PriceVsValueChart();
+                 createModule5UpsideChart();
+            }
+        }
+
+        function getScoreBadgeClass(scoreText) {
+            if (!scoreText) return '';
+            const text = String(scoreText).toLowerCase(); 
+            if (text.includes('muy alto') || text.includes('alto') || text.includes('🟢')) return 'score-green';
+            if (text.includes('medio') || text.includes('🟡')) return 'score-yellow';
+            if (text.includes('bajo-med') || text.includes('🔶')) return 'score-orange';
+            if (text.includes('bajo') || text.includes('🔴')) return 'score-red';
+            if (text.includes('liderando')) return 'score-green';
+            if (text.includes('riesgo medio')) return 'score-orange';
+            if (text.includes('riesgo alto')) return 'score-red';
+            return 'bg-gray-200 text-gray-800';
+        }
+        
+        function populateTable(tableBodyId, dataArray, columns) {
+            const tableBody = document.getElementById(tableBodyId);
+            if (!tableBody) return;
+            tableBody.innerHTML = ''; 
+
+            dataArray.forEach(item => {
+                const row = tableBody.insertRow();
+                columns.forEach(column => {
+                    const cell = row.insertCell();
+                    let content = item[column.key] !== undefined ? item[column.key] : '-'; 
+                    if (column.isBadge) {
+                        content = `<span class="score-badge ${getScoreBadgeClass(content)}">${content}</span>`;
+                    } else if (column.isButton) {
+                         const ticker = item.ticker || item.empresa; 
+                         const nombreEmpresa = item.empresa ? item.empresa.split(' (')[0] : ticker;
+                         content = `<button class="text-indigo-600 hover:text-indigo-800 font-medium" onclick="openCompanyModal('${ticker}', '${nombreEmpresa}')">Ver Detalles</button>`;
+                    } else if (column.key === 'precio' || column.key === 'precio_actual' || column.key === 'valor_base') {
+                        if (typeof item[column.key] === 'number') {
+                           content = `$${item[column.key].toFixed(2)}`;
+                        } else {
+                           content = String(item[column.key]);
+                        }
+                    } else if (typeof content === 'number' && column.key !== 'subscore' && column.key !== 'calificacion' && !column.key.toLowerCase().includes('cagr') && !column.key.toLowerCase().includes('yield')) {
+                         if (column.key.toLowerCase().includes('upside')) {
+                            content = `${content.toFixed(1)}%`;
+                         }
+                    }  else if (column.key.toLowerCase().includes('cagr') || column.key.toLowerCase().includes('yield') || column.key.toLowerCase().includes('roe') || column.key.toLowerCase().includes('roic')) {
+                         content = `${item[column.key]}%`;
+                    }
+                    cell.innerHTML = content;
+                });
+            });
+        }
+        
+        function populateModule4Evaluaciones() {
+            const container = document.getElementById('module4Content');
+            if (!container) return;
+            container.innerHTML = '';
+            informeData.modulo4.evaluaciones.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'p-4 border rounded-lg bg-gray-50';
+                div.innerHTML = `
+                    <h4 class="text-lg font-semibold text-indigo-600 mb-2">${item.empresa} 
+                        <button class="ml-2 text-sm text-indigo-500 hover:text-indigo-700 underline" onclick="openCompanyModal('${item.ticker}', '${item.empresa.split(' (')[0]}')">Ver Más</button>
+                    </h4>
+                    <p><strong>Modelo de negocio:</strong> ${item.modelo}</p>
+                    <p><strong>Liderazgo:</strong> ${item.liderazgo}</p>
+                    <p><strong>Innovación:</strong> ${item.innovacion}</p>
+                    <p><strong>Riesgos:</strong> ${item.riesgos}</p>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function populateModule5DCF() {
+            const container = document.getElementById('module5DCFContent');
+            if (!container) return;
+            container.innerHTML = '';
+            informeData.modulo5.dcf.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'p-4 border rounded-lg bg-gray-50';
+                div.innerHTML = `
+                    <h4 class="text-md font-semibold text-indigo-600 mb-1">${item.empresa}</h4>
+                    <p><strong>Base:</strong> ${item.base} | <strong>Optimista:</strong> ${item.optimista} | <strong>Pesimista:</strong> ${item.pesimista}</p>
+                    <p class="text-sm text-gray-600">${item.comentario}</p>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function populateList(listId, dataArray) {
+            const listElement = document.getElementById(listId);
+            if(!listElement) return;
+            listElement.innerHTML = '';
+            dataArray.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                listElement.appendChild(li);
+            });
+        }
+
+        const modal = document.getElementById('companyModal');
+        const modalCompanyName = document.getElementById('modalCompanyName');
+        const modalCompanyDetails = document.getElementById('modalCompanyDetails');
+
+        function openCompanyModal(ticker, companyName) {
+            if (!modal || !modalCompanyName || !modalCompanyDetails) return;
+            
+            currentOpenCompanyTicker = ticker; 
+            modalCompanyName.textContent = companyName || ticker;
+            let detailsHtml = `<p class="text-gray-700">Cargando detalles para ${companyName || ticker}...</p>`;
+
+            const empresaMod2 = informeData.modulo2.empresas.find(e => e.ticker === ticker);
+            if (empresaMod2) {
+                detailsHtml = `
+                    <h4 class="text-lg font-semibold mt-3 mb-1 text-indigo-500">Información General (Módulo 2)</h4>
+                    <p><strong>Ticker:</strong> ${empresaMod2.ticker}</p>
+                    <p><strong>Capitalización de Mercado:</strong> ${empresaMod2.cap} USD</p>
+                    <p><strong>Precio Actual:</strong> ${empresaMod2.precio} USD (${empresaMod2.cambio})</p>
+                    <p><strong>Industria/Subsector:</strong> ${empresaMod2.industria}</p>
+                `;
+            }
+
+            const empresaMod3 = informeData.modulo3.indicadores.find(e => e.empresa === ticker);
+            if (empresaMod3) {
+                detailsHtml += `
+                    <h4 class="text-lg font-semibold mt-3 mb-1 text-indigo-500">Análisis Fundamental (Módulo 3)</h4>
+                    <p><strong>ROE:</strong> ${empresaMod3.roe}%</p>
+                    <p><strong>ROIC:</strong> ${empresaMod3.roic}%</p>
+                    <p><strong>FCF Yield:</strong> ${empresaMod3.fcf_yield}%</p>
+                    <p><strong>Margen Operativo:</strong> ${empresaMod3.margen_ope}%</p>
+                    <p><strong>Deuda/EBITDA:</strong> ${empresaMod3.deuda_ebitda}</p>
+                    <p><strong>EPS 5Y CAGR:</strong> ${empresaMod3.eps_cagr}%</p>
+                    <p><strong>Score MARAA:</strong> <span class="score-badge ${getScoreBadgeClass(empresaMod3.score)}">${empresaMod3.score}</span></p>
+                `;
+            }
+            
+            const empresaMod4 = informeData.modulo4.evaluaciones.find(e => e.ticker === ticker);
+            if (empresaMod4) {
+                 detailsHtml += `
+                    <h4 class="text-lg font-semibold mt-3 mb-1 text-indigo-500">Evaluación Cualitativa (Módulo 4)</h4>
+                    <p><strong>Modelo de Negocio:</strong> ${empresaMod4.modelo}</p>
+                    <p><strong>Liderazgo:</strong> ${empresaMod4.liderazgo}</p>
+                    <p><strong>Innovación:</strong> ${empresaMod4.innovacion}</p>
+                    <p><strong>Riesgos:</strong> ${empresaMod4.riesgos}</p>
+                `;
+            }
+
+            const empresaMod5Multiples = informeData.modulo5.multiples.find(e => e.empresa === ticker);
+             if (empresaMod5Multiples) {
+                 detailsHtml += `
+                    <h4 class="text-lg font-semibold mt-3 mb-1 text-indigo-500">Valoración - Múltiplos (Módulo 5)</h4>
+                    <p><strong>P/E Fwd:</strong> ${empresaMod5Multiples.pe_fwd}</p>
+                    <p><strong>EV/EBITDA:</strong> ${empresaMod5Multiples.ev_ebitda}</p>
+                    <p><strong>P/FCF:</strong> ${empresaMod5Multiples.p_fcf}</p>
+                    <p><strong>PEG:</strong> ${empresaMod5Multiples.peg}</p>
+                    <p><strong>Precio Actual:</strong> $${empresaMod5Multiples.precio_actual.toFixed(2)}</p>
+                    <p><strong>Valor Base Estimado:</strong> $${empresaMod5Multiples.valor_base.toFixed(2)} (Upside: ${empresaMod5Multiples.upside}%)</p>
+                    <p><strong>SAV:</strong> <span class="score-badge ${getScoreBadgeClass(empresaMod5Multiples.sav)}">${empresaMod5Multiples.sav}</span></p>
+                `;
+            }
+            const empresaMod5DCF = informeData.modulo5.dcf.find(e => e.empresa.includes(ticker));
+            if (empresaMod5DCF) {
+                 detailsHtml += `
+                    <h4 class="text-lg font-semibold mt-3 mb-1 text-indigo-500">Valoración - Escenarios DCF (Módulo 5)</h4>
+                    <p><strong>Escenario Base:</strong> ${empresaMod5DCF.base}</p>
+                    <p><strong>Escenario Optimista:</strong> ${empresaMod5DCF.optimista}</p>
+                    <p><strong>Escenario Pesimista:</strong> ${empresaMod5DCF.pesimista}</p>
+                    <p class="text-sm text-gray-600"><em>${empresaMod5DCF.comentario}</em></p>
+                `;
+            }
+            
+            const empresaMod6 = informeData.modulo6.recomendaciones_iniciales.find(e => e.empresa === ticker);
+            if (empresaMod6 && typeof empresaMod6.precio === 'number') { 
+                 detailsHtml += `
+                    <h4 class="text-lg font-semibold mt-3 mb-1 text-indigo-500">Seguimiento (Módulo 6)</h4>
+                    <p><strong>Último Precio:</strong> $${empresaMod6.precio.toFixed(2)}</p>
+                    <p><strong>Momentum:</strong> ${empresaMod6.momentum}</p>
+                    <p><strong>Sorpresa EPS:</strong> ${empresaMod6.sorpresa_eps}</p>
+                    <p><strong>Margen Operativo:</strong> ${empresaMod6.margen_op}</p>
+                    <p><strong>Acción Recomendada:</strong> ${empresaMod6.accion}</p>
+                `;
+            }
+
+            modalCompanyDetails.innerHTML = detailsHtml;
+            modal.style.display = "block";
+        }
+
+        function closeModal() {
+            if (modal) modal.style.display = "none";
+            currentOpenCompanyTicker = null; 
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) closeModal();
+        }
+
+        function createOrUpdateChart(canvasId, currentChartInstance, chartConfig) {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) {
+                console.error(`Canvas element with id ${canvasId} not found.`);
+                return null; 
+            }
+            if (currentChartInstance && typeof currentChartInstance.destroy === 'function') {
+                currentChartInstance.destroy();
+            }
+            try {
+                return new Chart(ctx.getContext('2d'), chartConfig);
+            } catch (error) {
+                console.error("Error creating chart:", error, "on canvas:", canvasId, "with config:", chartConfig);
+                return null; 
+            }
+        }
+        
+        function createModule1ScoreChart() {
+            const data = informeData.modulo1.scoreSectorial;
+            const chartConfig = {type:'bar',data:{labels:data.map(item=>item.variable),datasets:[{label:'Subscore',data:data.map(item=>item.subscore),backgroundColor:'rgba(79,70,229,0.7)',borderColor:'rgba(79,70,229,1)',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:'Composición del Score Sectorial MARAA'}},scales:{y:{beginAtZero:true,title:{display:true,text:'Subscore'}}}}};
+            module1ChartInstance = createOrUpdateChart('module1ScoreChart', module1ChartInstance, chartConfig);
+        }
+
+        function createComparisonChart(canvasId, chartInstanceVariable, dataKey, chartTitle, yAxisLabel) {
+            const data = informeData.modulo3.indicadores;
+            const chartConfig = {type:'bar',data:{labels:data.map(item=>item.empresa),datasets:[{label:yAxisLabel,data:data.map(item=>item[dataKey]),backgroundColor:data.map(item=>item.empresa==='LLY'?'rgba(234,179,8,0.7)':'rgba(75,192,192,0.7)'),borderColor:data.map(item=>item.empresa==='LLY'?'rgba(234,179,8,1)':'rgba(75,192,192,1)'),borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:chartTitle}},scales:{y:{beginAtZero:dataKey!=='eps_cagr',title:{display:true,text:`${yAxisLabel}(%)`}}}}};
+            if(canvasId==='module3RoicChart')module3RoicChartInstance=createOrUpdateChart(canvasId,module3RoicChartInstance,chartConfig);else if(canvasId==='module3FcfYieldChart')module3FcfYieldChartInstance=createOrUpdateChart(canvasId,module3FcfYieldChartInstance,chartConfig);else if(canvasId==='module3EpsCagrChart')module3EpsCagrChartInstance=createOrUpdateChart(canvasId,module3EpsCagrChartInstance,chartConfig);
+        }
+
+        function createModule3RoicChart(){createComparisonChart('module3RoicChart',module3RoicChartInstance,'roic','Comparativa ROIC (%) por Empresa','ROIC');}
+        function createModule3FcfYieldChart(){createComparisonChart('module3FcfYieldChart',module3FcfYieldChartInstance,'fcf_yield','Comparativa FCF Yield (%) por Empresa','FCF Yield');}
+        function createModule3EpsCagrChart(){createComparisonChart('module3EpsCagrChart',module3EpsCagrChartInstance,'eps_cagr','Comparativa EPS 5A CAGR (%) por Empresa','EPS 5A CAGR');}
+
+        function createModule5PriceVsValueChart(){const data=informeData.modulo5.multiples;const chartConfig={type:'bar',data:{labels:data.map(item=>item.empresa),datasets:[{label:'Precio Actual (USD)',data:data.map(item=>item.precio_actual),backgroundColor:'rgba(54,162,235,0.7)',borderColor:'rgba(54,162,235,1)',borderWidth:1},{label:'Valor Base Estimado (USD)',data:data.map(item=>item.valor_base),backgroundColor:'rgba(255,159,64,0.7)',borderColor:'rgba(255,159,64,1)',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'},title:{display:true,text:'Precio Actual vs. Valor Estimado'}},scales:{y:{beginAtZero:true,title:{display:true,text:'Valor (USD)'}}}}};module5PriceVsValueChartInstance=createOrUpdateChart('module5PriceVsValueChart',module5PriceVsValueChartInstance,chartConfig);}
+        function createModule5UpsideChart(){const data=informeData.modulo5.multiples;const chartConfig={type:'bar',data:{labels:data.map(item=>item.empresa),datasets:[{label:'Upside Potencial (%)',data:data.map(item=>item.upside),backgroundColor:data.map(item=>item.upside>=0?'rgba(75,192,75,0.7)':'rgba(255,99,132,0.7)'),borderColor:data.map(item=>item.upside>=0?'rgba(75,192,75,1)':'rgba(255,99,132,1)'),borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:'Potencial de Upside (%)'}},scales:{y:{title:{display:true,text:'Upside (%)'}}}}};module5UpsideChartInstance=createOrUpdateChart('module5UpsideChart',module5UpsideChartInstance,chartConfig);}
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const scoreTableBody = document.getElementById('module1ScoreTableBody');
+            informeData.modulo1.scoreSectorial.forEach(item=>{const row=scoreTableBody.insertRow();row.insertCell().textContent=item.variable;row.insertCell().textContent=item.ponderacion;row.insertCell().textContent=item.calificacion;row.insertCell().textContent=item.subscore.toFixed(3);});
+            const totalRow=scoreTableBody.insertRow();const totalCell1=totalRow.insertCell();totalCell1.colSpan=3;totalCell1.className='font-bold text-right';totalCell1.textContent='Score Total Sectorial';const totalCell2=totalRow.insertCell();totalCell2.className='font-bold kpi-value';totalCell2.textContent=informeData.modulo1.scoreTotal.toFixed(2);
+            populateTable('module2TableBody',informeData.modulo2.empresas,[{key:'empresa'},{key:'ticker'},{key:'cap'},{key:'precio'},{key:'cambio'},{key:'industria'},{key:'ver_detalles',isButton:true}]);
+            populateTable('module3TableBody',informeData.modulo3.indicadores,[{key:'empresa'},{key:'roe'},{key:'roic'},{key:'fcf_yield'},{key:'margen_ope'},{key:'deuda_ebitda'},{key:'eps_cagr'},{key:'score',isBadge:true},{key:'ver_detalles',isButton:true}]);
+            populateModule4Evaluaciones();
+            populateTable('module4SummaryTableBody',informeData.modulo4.resumen,[{key:'empresa'},{key:'modelo'},{key:'liderazgo'},{key:'innovacion'},{key:'riesgos'}]);
+            populateTable('module5MultiplesTableBody',informeData.modulo5.multiples,[{key:'empresa'},{key:'pe_fwd'},{key:'ev_ebitda'},{key:'p_fcf'},{key:'peg'},{key:'precio_actual'},{key:'valor_base'},{key:'upside'},{key:'sav',isBadge:true}]);
+            populateModule5DCF();
+            populateList('module6TrackedCompanies',informeData.modulo6.seguimiento);
+            populateTable('module6MonitoringVars',informeData.modulo6.variables_monitoreo,[{key:'variable'},{key:'umbral'}]);
+            populateTable('module6Recommendations',informeData.modulo6.recomendaciones_iniciales,[{key:'empresa'},{key:'precio'},{key:'momentum'},{key:'sorpresa_eps'},{key:'margen_op'},{key:'accion'}]);
+            populateTable('conclusionesRecomendadas',informeData.conclusiones_finales.recomendadas,[{key:'empresa'},{key:'ticker'},{key:'rol',isBadge:true},{key:'justificacion'}]);
+            populateTable('conclusionesRiesgo',informeData.conclusiones_finales.riesgo,[{key:'empresa'},{key:'clasificacion',isBadge:true},{key:'riesgo_est'}]);
+            showModule('module1'); 
+        });
+    </script>
+</body>
+</html>
